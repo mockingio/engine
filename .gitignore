@@ -1,0 +1,11 @@
+vendor
+.DS_Store
+.idea
+server/vendor
+tasks.md
+_build
+/smocky
+dagger-debug
+bin
+dist/
+coverage.out
