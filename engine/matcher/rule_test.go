@@ -78,9 +78,7 @@ func TestRuleMatcher_Match(t *testing.T) {
 		},
 		{
 			"test number request, found match",
-			&cfg.Route{
-				Request: "",
-			},
+			&cfg.Route{},
 			newHTTPRequest(),
 			&cfg.Rule{Target: cfg.RequestNumber, Value: "2", Operator: cfg.Equal},
 			true,
@@ -116,7 +114,8 @@ func TestRuleMatcher_GetTargetValue(t *testing.T) {
 	_ = sess.Set(context.Background(), req.CountID(), 2)
 
 	var route = &cfg.Route{
-		Request: "GET /api/:object/:action",
+		Method: "GET",
+		Path:   "/api/:object/:action",
 	}
 
 	tests := []struct {

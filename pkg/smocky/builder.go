@@ -67,7 +67,8 @@ func (b *Builder) Port(port string) *Builder {
 func (b *Builder) Post(url string) *Builder {
 	b.clear()
 	b.route = &mock.Route{
-		Request: "POST " + url,
+		Method: "POST",
+		Path:   url,
 	}
 	return b
 }
@@ -75,7 +76,8 @@ func (b *Builder) Post(url string) *Builder {
 func (b *Builder) Get(url string) *Builder {
 	b.clear()
 	b.route = &mock.Route{
-		Request: "GET " + url,
+		Method: "GET",
+		Path:   url,
 	}
 	return b
 }
@@ -83,7 +85,8 @@ func (b *Builder) Get(url string) *Builder {
 func (b *Builder) Put(url string) *Builder {
 	b.clear()
 	b.route = &mock.Route{
-		Request: "PUT " + url,
+		Method: "PUT",
+		Path:   url,
 	}
 	return b
 }
@@ -91,7 +94,8 @@ func (b *Builder) Put(url string) *Builder {
 func (b *Builder) Delete(url string) *Builder {
 	b.clear()
 	b.route = &mock.Route{
-		Request: "DELETE " + url,
+		Method: "DELETE",
+		Path:   url,
 	}
 	return b
 }
@@ -99,7 +103,8 @@ func (b *Builder) Delete(url string) *Builder {
 func (b *Builder) Option(url string) *Builder {
 	b.clear()
 	b.route = &mock.Route{
-		Request: "OPTION " + url,
+		Method: "OPTION",
+		Path:   url,
 	}
 	return b
 }

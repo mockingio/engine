@@ -1,7 +1,8 @@
 name: Hello World
 id: 123
 routes:
-  - request: GET /hello/world
+  - method: GET
+    path: /hello/world
     responses:
       - status: 200
         headers:
@@ -16,7 +17,8 @@ routes:
             modifier: "name"
             value: "test"
             operator: "equal"
-  - request: GET /greeting/world
+  - method: GET
+    path: /greeting/world
     responses:
       - status: 200
         delay: 3000
@@ -32,7 +34,8 @@ routes:
             modifier: ""
             value: "3"
             operator: "equal"
-  - request: GET /hello/*
+  - method: GET
+    path: /hello/*
     responses:
       - status: 200
         headers:
@@ -41,10 +44,11 @@ routes:
           {
             "name": "John Doe"
           }
-  - request: POST /hello/world
+  - method: POST
+    path: /hello/world
     body: |
-        {
-          "name": "John Doe"
-        }
+      {
+        "name": "John Doe"
+      }
     responses:
       - status: 201

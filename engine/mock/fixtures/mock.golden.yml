@@ -1,7 +1,8 @@
 id: "123"
 name: Hello World
 routes:
-- request: GET /hello/world
+- method: GET
+  path: /hello/world
   description: ""
   responses:
   - status: 200
@@ -17,7 +18,8 @@ routes:
       modifier: name
       value: test
       operator: equal
-- request: GET /greeting/world
+- method: GET
+  path: /greeting/world
   description: ""
   responses:
   - status: 200
@@ -34,7 +36,8 @@ routes:
       modifier: ""
       value: "3"
       operator: equal
-- request: GET /hello/*
+- method: GET
+  path: /hello/*
   description: ""
   responses:
   - status: 200
@@ -44,7 +47,8 @@ routes:
       {
         "name": "John Doe"
       }
-- request: POST /hello/world
+- method: POST
+  path: /hello/world
   description: ""
   responses:
   - status: 201

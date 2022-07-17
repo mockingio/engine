@@ -99,70 +99,70 @@ func TestRouteMatcher_Match(t *testing.T) {
 		{
 			"single rule matched, response returned",
 			httpPostReqWithHeaderBody,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{singleRuleResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{singleRuleResponse}},
 			&singleRuleResponse,
 			false,
 		},
 		{
 			"URL wildcard matched, response returned",
 			httpPostReqWithHeaderBody,
-			&cfg.Route{Request: "POST /how/are/*", Responses: []cfg.Response{singleRuleResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/*", Responses: []cfg.Response{singleRuleResponse}},
 			&singleRuleResponse,
 			false,
 		},
 		{
 			"multiple rule matched, response returned",
 			httpPostReqWithHeaderBody,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{multiANDRulesResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{multiANDRulesResponse}},
 			&multiANDRulesResponse,
 			false,
 		},
 		{
 			"one of rules matched, response returned",
 			httpPostReqWithHeaderBody,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{multiORRulesResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{multiORRulesResponse}},
 			&multiORRulesResponse,
 			false,
 		},
 		{
 			"none of rules matched, no response returned",
 			httpPostReqWithHeaderBody,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{multiORRulesNotMatchedResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{multiORRulesNotMatchedResponse}},
 			nil,
 			false,
 		},
 		{
 			"not all rules matched, no response returned",
 			httpPostReqWithHeader,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{multiANDRulesResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{multiANDRulesResponse}},
 			nil,
 			false,
 		},
 		{
 			"method not matched, no response returned",
 			httpGetReq,
-			&cfg.Route{Request: "POST /", Responses: []cfg.Response{singleRuleResponse}},
+			&cfg.Route{Method: "POST", Path: "/", Responses: []cfg.Response{singleRuleResponse}},
 			nil,
 			false,
 		},
 		{
 			"url not matched, no response returned",
 			httpPostReq,
-			&cfg.Route{Request: "POST /", Responses: []cfg.Response{singleRuleResponse}},
+			&cfg.Route{Method: "POST", Path: "/", Responses: []cfg.Response{singleRuleResponse}},
 			nil,
 			false,
 		},
 		{
 			"no rule responses, no response returned",
 			httpPostReq,
-			&cfg.Route{Request: "POST /", Responses: []cfg.Response{}},
+			&cfg.Route{Method: "POST", Path: "/", Responses: []cfg.Response{}},
 			nil,
 			false,
 		},
 		{
 			"no rules matched, no response returned",
 			httpPostReq,
-			&cfg.Route{Request: "POST /how/are/you", Responses: []cfg.Response{singleRuleResponse}},
+			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{singleRuleResponse}},
 			nil,
 			false,
 		},
@@ -219,7 +219,8 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 	t.Run("multi requests until matched", func(t *testing.T) {
 		route := &cfg.Route{
-			Request: "GET /how/are/you",
+			Method: "GET",
+			Path:   "/how/are/you",
 			Responses: []cfg.Response{{
 				Status: http.StatusOK,
 				Rules: []cfg.Rule{{
@@ -239,7 +240,8 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 	t.Run("no response strategy setup", func(t *testing.T) {
 		route := &cfg.Route{
-			Request:   "GET /how/are/you",
+			Method:    "GET",
+			Path:      "/how/are/you",
 			Responses: []cfg.Response{response1, response2, response3},
 		}
 
@@ -265,7 +267,8 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 		}
 
 		route := &cfg.Route{
-			Request:   "GET /how/are/you",
+			Method:    "GET",
+			Path:      "/how/are/you",
 			Responses: []cfg.Response{response1, response2, defaultResponse, response3},
 		}
 
@@ -278,7 +281,8 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 	t.Run("sequential strategy setup", func(t *testing.T) {
 		route := &cfg.Route{
-			Request:      "GET /how/are/you",
+			Method:       "GET",
+			Path:         "/how/are/you",
 			ResponseMode: cfg.ResponseSequentially,
 			Responses:    []cfg.Response{response1, response2, response3},
 		}

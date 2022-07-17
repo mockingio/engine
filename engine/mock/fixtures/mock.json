@@ -4,7 +4,8 @@
   "port": "3000",
   "routes": [
     {
-      "request": "GET /hello/world",
+      "method": "GET",
+      "path": "/hello/world",
       "responses": [
         {
           "status": 200,
@@ -24,7 +25,8 @@
       ]
     },
     {
-      "request": "GET /greeting/world",
+      "method": "GET",
+      "path": "/greeting/world",
       "responses": [
         {
           "status": 200,
@@ -45,7 +47,8 @@
       ]
     },
     {
-      "request": "GET /hello/*",
+      "method": "GET",
+      "path": "/hello/*",
       "responses": [
         {
           "status": 200,
@@ -57,7 +60,8 @@
       ]
     },
     {
-      "request": "POST /hello/world",
+      "method": "POST",
+      "path": "/hello/world",
       "responses": [
         {
           "status": 201

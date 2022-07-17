@@ -30,8 +30,9 @@ func TestConfig(t *testing.T) {
 
 	t.Run("Load config from JSON file", func(t *testing.T) {
 		cfg, err := FromFile("fixtures/mock.json")
+		require.NoError(t, err)
 
-		assert.True(t, cfg.Validate() == nil)
+		require.NoError(t, cfg.Validate())
 
 		var goldenFile = filepath.Join("fixtures", "mock.golden.json")
 		require.NoError(t, err)

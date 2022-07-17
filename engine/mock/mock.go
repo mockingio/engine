@@ -2,6 +2,7 @@ package mock
 
 import (
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -39,13 +40,16 @@ func FromYaml(text string) (*Mock, error) {
 	if err := decoder.Decode(m); err != nil {
 		return nil, errors.Wrap(err, "decode yaml to mock")
 	}
-	defaultVals(m)
+	defaultValues(m)
 
 	return m, nil
 }
 
-func defaultVals(m *Mock) {
+func defaultValues(m *Mock) {
 	for _, r := range m.Routes {
+		if r.Method == "" {
+			r.Method = http.MethodGet
+		}
 		for i, res := range r.Responses {
 			if res.Status == 0 {
 				res.Status = 200

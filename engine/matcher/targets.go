@@ -52,8 +52,7 @@ func getRequestNumber(_ *cfg.Route, _ string, req Context) (string, error) {
 }
 
 func getValueFromRouteParam(route *cfg.Route, modifier string, req Context) (string, error) {
-	_, path := route.RequestParts()
-	templateParts := strings.Split(path, "/")
+	templateParts := strings.Split(route.Path, "/")
 	actualParts := strings.Split(req.HTTPRequest.URL.Path, "/")
 	if len(templateParts) != len(actualParts) {
 		return "", nil

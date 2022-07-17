@@ -17,11 +17,10 @@ func TestRoute_Validate(t *testing.T) {
 		route Route
 		error bool
 	}{
-		{"valid route", Route{Request: "POST /", Responses: validResponse}, false},
+		{"valid route", Route{Method: "POST", Path: "/", Responses: validResponse}, false},
 		{"invalid route, missing request", Route{Responses: validResponse}, true},
-		{"invalid route, invalid request", Route{Request: "", Responses: validResponse}, true},
-		{"invalid route, missing response", Route{Request: "POST /"}, true},
-		{"invalid route, invalid response", Route{Request: "POST /", Responses: []Response{}}, true},
+		{"invalid route, missing response", Route{Method: "POST", Path: "/"}, true},
+		{"invalid route, invalid response", Route{Method: "POST", Path: "/", Responses: []Response{}}, true},
 	}
 
 	for _, tt := range tests {

@@ -69,7 +69,8 @@ func setupMock() {
 		ID: "mock-id",
 		Routes: []*mock.Route{
 			{
-				Request: "GET /hello",
+				Method: "GET",
+				Path:   "/hello",
 				Responses: []mock.Response{
 					{
 						Status: 200,

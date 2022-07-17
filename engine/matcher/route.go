@@ -25,15 +25,14 @@ func NewRouteMatcher(route *cfg.Route, req Context) *RouteMatcher {
 }
 
 func (r *RouteMatcher) Match() (*cfg.Response, error) {
-	method, path := r.route.RequestParts()
 	httpRequest := r.req.HTTPRequest
 	db := persistent.GetDefault()
 
-	if !strings.EqualFold(method, httpRequest.Method) {
+	if !strings.EqualFold(r.route.Method, httpRequest.Method) {
 		return nil, nil
 	}
 
-	parts := strings.Split(path, "/")
+	parts := strings.Split(r.route.Path, "/")
 	for i, part := range parts {
 		if part != "" && string(part[0]) == ":" {
 			parts[i] = "*"
