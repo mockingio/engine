@@ -19,9 +19,7 @@ type Mock struct {
 }
 
 func New() *Mock {
-	return &Mock{
-		ID: newID(),
-	}
+	return &Mock{}
 }
 
 func FromFile(file string) (*Mock, error) {

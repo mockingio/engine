@@ -66,6 +66,28 @@ func TestMemory_SetGetActiveSession(t *testing.T) {
 	assert.Equal(t, "123456", v)
 }
 
+func TestMemory_PatchRoute(t *testing.T) {
+	m := New()
+	mok := &mock.Mock{
+		ID: "mockid",
+		Routes: []*mock.Route{
+			{
+				ID:     "routeid",
+				Method: "GET",
+			},
+			{
+				ID:     "routeid1",
+				Method: "PUT",
+			},
+		},
+	}
+	_ = m.SetMock(context.Background(), mok)
+
+	err := m.PatchRoute(context.Background(), "mockid", "routeid", `{"method": "POST"}`)
+	require.NoError(t, err)
+	assert.Equal(t, "POST", mok.Routes[0].Method)
+}
+
 func TestMemory_GetConfigs(t *testing.T) {
 	cfg1 := &mock.Mock{
 		Port: "1234",

@@ -2,10 +2,13 @@ package memory
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/echlebek/patch"
+	"github.com/samber/lo"
 	"github.com/tuongaz/smocky-engine/engine/mock"
 	"github.com/tuongaz/smocky-engine/engine/persistent"
 )
@@ -123,6 +126,42 @@ func (m *Memory) GetActiveSession(ctx context.Context, mockID string) (string, e
 	}
 
 	return "", errors.New("unable to convert to string value")
+}
+
+func (m *Memory) PatchRoute(ctx context.Context, mockID string, routeID string, data string) error {
+	mok, err := m.GetMock(ctx, mockID)
+	if err != nil {
+		return err
+	}
+
+	if mok == nil {
+		return errors.New("mock not found")
+	}
+
+	route, idx, ok := lo.FindIndexOf[*mock.Route](mok.Routes, func(route *mock.Route) bool {
+		return route.ID == routeID
+	})
+
+	if !ok {
+		return errors.New("route not found")
+	}
+
+	var values map[string]*json.RawMessage
+	if err := json.Unmarshal([]byte(data), &values); err != nil {
+		return err
+	}
+
+	if err := patch.Struct(route, values); err != nil {
+		return err
+	}
+
+	mok.Routes[idx] = route
+
+	if err := m.SetMock(ctx, mok); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func toActiveSessionKey(mockID string) string {
