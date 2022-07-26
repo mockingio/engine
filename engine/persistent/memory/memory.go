@@ -164,6 +164,47 @@ func (m *Memory) PatchRoute(ctx context.Context, mockID string, routeID string, 
 	return nil
 }
 
+func (m *Memory) PatchResponse(ctx context.Context, mockID, routeID, responseID, data string) error {
+	mok, err := m.GetMock(ctx, mockID)
+	if err != nil {
+		return err
+	}
+	if mok == nil {
+		return errors.New("mock not found")
+	}
+
+	route, routeIdx, ok := lo.FindIndexOf[*mock.Route](mok.Routes, func(route *mock.Route) bool {
+		return route.ID == routeID
+	})
+	if !ok {
+		return errors.New("route not found")
+	}
+
+	response, resIdx, ok := lo.FindIndexOf[mock.Response](route.Responses, func(response mock.Response) bool {
+		return response.ID == responseID
+	})
+	if !ok {
+		return errors.New("response not found")
+	}
+
+	var values map[string]*json.RawMessage
+	if err := json.Unmarshal([]byte(data), &values); err != nil {
+		return err
+	}
+	if err := patch.Struct(&response, values); err != nil {
+		return err
+	}
+
+	route.Responses[resIdx] = response
+	mok.Routes[routeIdx] = route
+
+	if err := m.SetMock(ctx, mok); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func toActiveSessionKey(mockID string) string {
 	return fmt.Sprintf("%s-active-session", mockID)
 }

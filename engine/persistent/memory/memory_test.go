@@ -88,6 +88,38 @@ func TestMemory_PatchRoute(t *testing.T) {
 	assert.Equal(t, "POST", mok.Routes[0].Method)
 }
 
+func TestMemory_PatchResponse(t *testing.T) {
+	m := New()
+	mok := &mock.Mock{
+		ID: "mockid",
+		Routes: []*mock.Route{
+			{
+				ID:     "routeid1",
+				Method: "GET",
+			},
+			{
+				ID:     "routeid2",
+				Method: "PUT",
+				Responses: []mock.Response{
+					{
+						ID:     "responseid1",
+						Status: 200,
+					},
+					{
+						ID:     "responseid2",
+						Status: 400,
+					},
+				},
+			},
+		},
+	}
+	_ = m.SetMock(context.Background(), mok)
+
+	err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{"status": 201}`)
+	require.NoError(t, err)
+	assert.Equal(t, 201, mok.Routes[1].Responses[1].Status)
+}
+
 func TestMemory_GetConfigs(t *testing.T) {
 	cfg1 := &mock.Mock{
 		Port: "1234",
