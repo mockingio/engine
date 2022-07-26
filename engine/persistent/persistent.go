@@ -34,4 +34,5 @@ type Persistent interface {
 	GetActiveSession(ctx context.Context, mockID string) (string, error)
 
 	PatchRoute(ctx context.Context, mockID string, routeID string, data string) error
+	PatchResponse(ctx context.Context, mockID, routeID, responseID, data string) error
 }
