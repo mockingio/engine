@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 	"sync"
 
-	"github.com/echlebek/patch"
 	"github.com/samber/lo"
 	"github.com/tuongaz/smocky-engine/engine/mock"
 	"github.com/tuongaz/smocky-engine/engine/persistent"
@@ -151,7 +152,7 @@ func (m *Memory) PatchRoute(ctx context.Context, mockID string, routeID string, 
 		return err
 	}
 
-	if err := patch.Struct(route, values); err != nil {
+	if err := patchStruct(route, values); err != nil {
 		return err
 	}
 
@@ -191,7 +192,7 @@ func (m *Memory) PatchResponse(ctx context.Context, mockID, routeID, responseID,
 	if err := json.Unmarshal([]byte(data), &values); err != nil {
 		return err
 	}
-	if err := patch.Struct(&response, values); err != nil {
+	if err := patchStruct(&response, values); err != nil {
 		return err
 	}
 
@@ -207,4 +208,39 @@ func (m *Memory) PatchResponse(ctx context.Context, mockID, routeID, responseID,
 
 func toActiveSessionKey(mockID string) string {
 	return fmt.Sprintf("%s-active-session", mockID)
+}
+
+func patchStruct(resource interface{}, patches map[string]*json.RawMessage) error {
+	value := reflect.ValueOf(resource)
+	for value.Kind() == reflect.Interface || value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+	if value.Kind() != reflect.Struct {
+		return fmt.Errorf("can't operate on non-struct: %s", value.Kind().String())
+	}
+	if !value.CanAddr() {
+		return errors.New("unaddressable struct value")
+	}
+	valueT := value.Type()
+	for i := 0; i < valueT.NumField(); i++ {
+		field := value.Field(i)
+		if !field.CanAddr() || !field.CanInterface() {
+			continue
+		}
+		if patch, ok := patches[jsonFieldName(valueT.Field(i))]; ok {
+			field.Set(reflect.Zero(field.Type()))
+			if err := json.Unmarshal(*patch, field.Addr().Interface()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func jsonFieldName(field reflect.StructField) string {
+	name := strings.Split(field.Tag.Get("json"), ",")[0]
+	if name == "" {
+		name = field.Name
+	}
+	return name
 }

@@ -3,7 +3,6 @@ module github.com/tuongaz/smocky-engine
 go 1.18
 
 require (
-	github.com/echlebek/patch v0.2.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/uuid v1.3.0
 	github.com/itchyny/gojq v0.12.8
