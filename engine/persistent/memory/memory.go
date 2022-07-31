@@ -30,7 +30,7 @@ func New() *Memory {
 	}
 }
 
-func (m *Memory) OnMockChanges(subscriber func(mock mock.Mock)) {
+func (m *Memory) SubscribeMockChanges(subscriber func(mock mock.Mock)) {
 	m.subscribers = append(m.subscribers, subscriber)
 }
 

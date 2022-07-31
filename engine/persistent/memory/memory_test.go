@@ -148,7 +148,7 @@ func TestMemory_OnMockChanges(t *testing.T) {
 	updatedMock := mock.Mock{}
 
 	m := New()
-	m.OnMockChanges(func(mo mock.Mock) {
+	m.SubscribeMockChanges(func(mo mock.Mock) {
 		updatedMock = mo
 	})
 	_ = m.SetMock(context.Background(), cfg)
