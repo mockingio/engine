@@ -17,9 +17,10 @@ import (
 var _ persistent.Persistent = &Memory{}
 
 type Memory struct {
-	mu      sync.Mutex
-	configs map[string]*mock.Mock
-	kv      map[string]any
+	mu          sync.Mutex
+	configs     map[string]*mock.Mock
+	kv          map[string]any
+	subscribers []func(mock mock.Mock)
 }
 
 func New() *Memory {
@@ -27,6 +28,10 @@ func New() *Memory {
 		configs: map[string]*mock.Mock{},
 		kv:      map[string]any{},
 	}
+}
+
+func (m *Memory) OnMockChanges(subscriber func(mock mock.Mock)) {
+	m.subscribers = append(m.subscribers, subscriber)
 }
 
 func (m *Memory) Get(_ context.Context, key string) (any, error) {
@@ -44,15 +49,19 @@ func (m *Memory) Set(_ context.Context, key string, value any) error {
 	return nil
 }
 
-func (m *Memory) SetMock(ctx context.Context, cfg *mock.Mock) error {
+func (m *Memory) SetMock(_ context.Context, cfg *mock.Mock) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	m.configs[cfg.ID] = cfg
+	for _, subscriber := range m.subscribers {
+		subscriber(*cfg)
+	}
+
 	return nil
 }
 
-func (m *Memory) GetMock(ctx context.Context, id string) (*mock.Mock, error) {
+func (m *Memory) GetMock(_ context.Context, id string) (*mock.Mock, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -64,7 +73,7 @@ func (m *Memory) GetMock(ctx context.Context, id string) (*mock.Mock, error) {
 	return cfg, nil
 }
 
-func (m *Memory) GetMocks(ctx context.Context) ([]*mock.Mock, error) {
+func (m *Memory) GetMocks(_ context.Context) ([]*mock.Mock, error) {
 	var configs []*mock.Mock
 	for _, cfg := range m.configs {
 		configs = append(configs, cfg)

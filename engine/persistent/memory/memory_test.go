@@ -139,3 +139,18 @@ func TestMemory_GetConfigs(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 2, len(configs))
 }
+
+func TestMemory_OnMockChanges(t *testing.T) {
+	cfg := &mock.Mock{
+		Port: "1234",
+		ID:   "*id1*",
+	}
+	updatedMock := mock.Mock{}
+
+	m := New()
+	m.OnMockChanges(func(mo mock.Mock) {
+		updatedMock = mo
+	})
+	_ = m.SetMock(context.Background(), cfg)
+	assert.Equal(t, updatedMock, *cfg)
+}
