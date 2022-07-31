@@ -10,7 +10,6 @@ import (
 
 	"github.com/tuongaz/smocky-engine/engine/matcher"
 	cfg "github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
 )
 
@@ -170,10 +169,9 @@ func TestRouteMatcher_Match(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			persistent.New(memory.New())
 			result, err := matcher.NewRouteMatcher(tt.route, matcher.Context{
 				HTTPRequest: tt.httpReq,
-			}).Match()
+			}, memory.New()).Match()
 			assert.Equal(t, tt.expectedResponse, result)
 			assert.Equal(t, tt.expectedError, err != nil)
 		})
@@ -233,7 +231,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 		m := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		})
+		}, memory.New())
 		res, _ := m.Match()
 		assert.Nil(t, res)
 	})
@@ -247,7 +245,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 		result, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		}).Match()
+		}, memory.New()).Match()
 
 		require.NoError(t, err)
 		assert.Equal(t, &response1, result)
@@ -274,7 +272,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 
 		result, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		}).Match()
+		}, memory.New()).Match()
 		require.NoError(t, err)
 		assert.Equal(t, &defaultResponse, result)
 	})
@@ -287,21 +285,23 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 			Responses:    []cfg.Response{response1, response2, response3},
 		}
 
+		db := memory.New()
+
 		result1, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		}).Match()
+		}, db).Match()
 		require.NoError(t, err)
 		assert.Equal(t, &response1, result1)
 
 		result2, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		}).Match()
+		}, db).Match()
 		require.NoError(t, err)
 		assert.Equal(t, &response2, result2)
 
 		result3, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: request,
-		}).Match()
+		}, db).Match()
 		require.NoError(t, err)
 		assert.Equal(t, &response3, result3)
 	})

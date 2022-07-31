@@ -9,7 +9,6 @@ import (
 
 	"github.com/tuongaz/smocky-engine/engine"
 	"github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
 )
 
@@ -50,11 +49,10 @@ func (b *Builder) Start(t *testing.T) *httptest.Server {
 	b.config.ID = id
 
 	mem := memory.New()
-	persistent.New(mem)
 	_ = mem.SetMock(context.Background(), b.config)
 	_ = mem.SetActiveSession(context.Background(), id, "session-id")
 
-	m := engine.New(id)
+	m := engine.New(id, mem)
 
 	return httptest.NewServer(http.HandlerFunc(m.Handler))
 }

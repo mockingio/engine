@@ -22,13 +22,13 @@ var targets = map[cfg.Target]getTargetValueFn{
 	cfg.Body:          getValueFromBody,
 }
 
-type getTargetValueFn func(route *cfg.Route, modifier string, req Context) (string, error)
+type getTargetValueFn func(route *cfg.Route, modifier string, req Context, db persistent.Persistent) (string, error)
 
-func getValueFromHeader(_ *cfg.Route, modifier string, req Context) (string, error) {
+func getValueFromHeader(_ *cfg.Route, modifier string, req Context, _ persistent.Persistent) (string, error) {
 	return req.HTTPRequest.Header.Get(modifier), nil
 }
 
-func getValueFromCookie(_ *cfg.Route, modifier string, req Context) (string, error) {
+func getValueFromCookie(_ *cfg.Route, modifier string, req Context, _ persistent.Persistent) (string, error) {
 	cookies := req.HTTPRequest.Cookies()
 	for _, c := range cookies {
 		if c.Name == modifier {
@@ -38,12 +38,11 @@ func getValueFromCookie(_ *cfg.Route, modifier string, req Context) (string, err
 	return "", nil
 }
 
-func getValueFromQueryString(_ *cfg.Route, modifier string, req Context) (string, error) {
+func getValueFromQueryString(_ *cfg.Route, modifier string, req Context, _ persistent.Persistent) (string, error) {
 	return req.HTTPRequest.URL.Query().Get(modifier), nil
 }
 
-func getRequestNumber(_ *cfg.Route, _ string, req Context) (string, error) {
-	db := persistent.GetDefault()
+func getRequestNumber(_ *cfg.Route, _ string, req Context, db persistent.Persistent) (string, error) {
 	value, err := db.GetInt(req.HTTPRequest.Context(), req.CountID())
 	if err != nil {
 		return "", err
@@ -51,7 +50,7 @@ func getRequestNumber(_ *cfg.Route, _ string, req Context) (string, error) {
 	return strconv.Itoa(value), nil
 }
 
-func getValueFromRouteParam(route *cfg.Route, modifier string, req Context) (string, error) {
+func getValueFromRouteParam(route *cfg.Route, modifier string, req Context, _ persistent.Persistent) (string, error) {
 	templateParts := strings.Split(route.Path, "/")
 	actualParts := strings.Split(req.HTTPRequest.URL.Path, "/")
 	if len(templateParts) != len(actualParts) {
@@ -69,7 +68,7 @@ func getValueFromRouteParam(route *cfg.Route, modifier string, req Context) (str
 	return "", nil
 }
 
-func getValueFromBody(_ *cfg.Route, modifier string, req Context) (string, error) {
+func getValueFromBody(_ *cfg.Route, modifier string, req Context, _ persistent.Persistent) (string, error) {
 	httpRequest := req.HTTPRequest
 	if httpRequest.Body == nil {
 		return "", nil

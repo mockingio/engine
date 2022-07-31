@@ -10,6 +10,7 @@ import (
 
 	"github.com/tuongaz/smocky-engine/engine/matcher"
 	cfg "github.com/tuongaz/smocky-engine/engine/mock"
+	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
 )
 
 func TestResponseMatcher_Match(t *testing.T) {
@@ -100,9 +101,10 @@ func TestResponseMatcher_Match(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			db := memory.New()
 			isMatched, err := matcher.NewResponseMatcher(nil, tt.response, matcher.Context{
 				HTTPRequest: newRequest(),
-			}).Match()
+			}, db).Match()
 			require.NoError(t, err)
 			assert.Equal(t, tt.isMatched, isMatched)
 		})

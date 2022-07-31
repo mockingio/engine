@@ -15,18 +15,19 @@ import (
 type RouteMatcher struct {
 	route *cfg.Route
 	req   Context
+	db    persistent.Persistent
 }
 
-func NewRouteMatcher(route *cfg.Route, req Context) *RouteMatcher {
+func NewRouteMatcher(route *cfg.Route, req Context, db persistent.Persistent) *RouteMatcher {
 	return &RouteMatcher{
 		route: route,
 		req:   req,
+		db:    db,
 	}
 }
 
 func (r *RouteMatcher) Match() (*cfg.Response, error) {
 	httpRequest := r.req.HTTPRequest
-	db := persistent.GetDefault()
 
 	if !strings.EqualFold(r.route.Method, httpRequest.Method) {
 		return nil, nil
@@ -43,7 +44,7 @@ func (r *RouteMatcher) Match() (*cfg.Response, error) {
 		return nil, nil
 	}
 
-	_, err := db.Increment(
+	_, err := r.db.Increment(
 		httpRequest.Context(),
 		r.req.CountID(),
 	)
@@ -63,23 +64,22 @@ func (r *RouteMatcher) pickResponse(responses []*cfg.Response) (*cfg.Response, e
 	if len(responses) == 0 {
 		return nil, nil
 	}
-	db := persistent.GetDefault()
 	sequenceID := r.req.SequenceID()
 	ctx := r.req.HTTPRequest.Context()
 
 	switch r.route.ResponseMode {
 	case cfg.ResponseSequentially:
-		idx, err := db.GetInt(ctx, sequenceID)
+		idx, err := r.db.GetInt(ctx, sequenceID)
 		if err != nil {
 			return nil, err
 		}
 
 		if idx+1 == len(responses) {
-			if err := db.Set(ctx, sequenceID, 0); err != nil {
+			if err := r.db.Set(ctx, sequenceID, 0); err != nil {
 				return nil, err
 			}
 		} else {
-			if err := db.Set(ctx, sequenceID, idx+1); err != nil {
+			if err := r.db.Set(ctx, sequenceID, idx+1); err != nil {
 				return nil, err
 			}
 		}
@@ -105,7 +105,7 @@ func (r *RouteMatcher) findMatches() ([]*cfg.Response, error) {
 
 	for _, response := range r.route.Responses {
 		response := response
-		matched, err := NewResponseMatcher(r.route, &response, r.req).Match()
+		matched, err := NewResponseMatcher(r.route, &response, r.req, r.db).Match()
 		if err != nil {
 			return nil, err
 		}

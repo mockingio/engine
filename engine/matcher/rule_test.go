@@ -12,7 +12,6 @@ import (
 
 	"github.com/tuongaz/smocky-engine/engine/matcher"
 	cfg "github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
 )
 
@@ -23,10 +22,6 @@ func TestRuleMatcher_Match(t *testing.T) {
 		HTTPRequest: newHTTPRequest(),
 		SessionID:   sessionID,
 	}
-
-	mem := memory.New()
-	persistent.New(mem)
-	_ = mem.Set(context.Background(), req.CountID(), 2)
 
 	tests := []struct {
 		name    string
@@ -88,10 +83,13 @@ func TestRuleMatcher_Match(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mem := memory.New()
+			_ = mem.Set(context.Background(), req.CountID(), 2)
+
 			matched, err := matcher.NewRuleMatcher(tt.route, tt.rule, matcher.Context{
 				HTTPRequest: tt.request,
 				SessionID:   sessionID,
-			}).Match()
+			}, mem).Match()
 			if tt.error {
 				require.Error(t, err)
 			} else {
@@ -103,7 +101,6 @@ func TestRuleMatcher_Match(t *testing.T) {
 }
 
 func TestRuleMatcher_GetTargetValue(t *testing.T) {
-	sess := memory.New()
 	sessionID := "123456"
 
 	req := matcher.Context{
@@ -111,7 +108,8 @@ func TestRuleMatcher_GetTargetValue(t *testing.T) {
 		SessionID:   sessionID,
 	}
 
-	_ = sess.Set(context.Background(), req.CountID(), 2)
+	mem := memory.New()
+	_ = mem.Set(context.Background(), req.CountID(), 2)
 
 	var route = &cfg.Route{
 		Method: "GET",
@@ -144,7 +142,7 @@ func TestRuleMatcher_GetTargetValue(t *testing.T) {
 			actual, err := matcher.NewRuleMatcher(route, tt.rule, matcher.Context{
 				HTTPRequest: tt.request,
 				SessionID:   sessionID,
-			}).GetTargetValue()
+			}, mem).GetTargetValue()
 
 			require.NoError(t, err)
 			assert.Equal(t, tt.expectedValue, actual)

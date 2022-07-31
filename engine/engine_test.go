@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,12 +13,11 @@ import (
 
 	"github.com/tuongaz/smocky-engine/engine"
 	"github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
 )
 
 func TestEngine_Pause(t *testing.T) {
-	eng := engine.New("mock-id")
+	eng := engine.New("mock-id", memory.New())
 	eng.Pause()
 
 	req := httptest.NewRequest(http.MethodPost, "/test", nil)
@@ -28,9 +28,9 @@ func TestEngine_Pause(t *testing.T) {
 }
 
 func TestEngine_PauseResume(t *testing.T) {
-	setupMock()
+	mem := setupMock()
 	req := httptest.NewRequest(http.MethodGet, "/hello", nil)
-	eng := engine.New("mock-id")
+	eng := engine.New("mock-id", mem)
 
 	eng.Pause()
 	w := httptest.NewRecorder()
@@ -46,8 +46,8 @@ func TestEngine_PauseResume(t *testing.T) {
 }
 
 func TestEngine_Match(t *testing.T) {
-	setupMock()
-	eng := engine.New("mock-id")
+	mem := setupMock()
+	eng := engine.New("mock-id", mem)
 
 	req := httptest.NewRequest(http.MethodGet, "/hello", nil)
 	w := httptest.NewRecorder()
@@ -64,7 +64,7 @@ func TestEngine_Match(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
 
-func setupMock() {
+func setupMock() persistent.Persistent {
 	mok := &mock.Mock{
 		ID: "mock-id",
 		Routes: []*mock.Route{
@@ -81,6 +81,7 @@ func setupMock() {
 		},
 	}
 	mem := memory.New()
-	persistent.New(mem)
 	_ = mem.SetMock(context.Background(), mok)
+
+	return mem
 }

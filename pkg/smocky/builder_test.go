@@ -187,6 +187,7 @@ func assertNoMatchHTTPGETRequest(t *testing.T, url string, responseStatus int) {
 }
 
 func assertHTTPGETRequest(t *testing.T, url string, expectedStatusCode int, expectedResponseBody string) {
+	t.Helper()
 	req, err := http.NewRequest("GET", url, nil)
 	require.NoError(t, err)
 

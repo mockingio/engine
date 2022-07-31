@@ -1,6 +1,7 @@
 package matcher
 
 import (
+	"github.com/tuongaz/smocky-engine/engine/persistent"
 	"regexp"
 
 	"github.com/pkg/errors"
@@ -8,11 +9,12 @@ import (
 	cfg "github.com/tuongaz/smocky-engine/engine/mock"
 )
 
-func NewRuleMatcher(route *cfg.Route, rule *cfg.Rule, req Context) *RuleMatcher {
+func NewRuleMatcher(route *cfg.Route, rule *cfg.Rule, req Context, db persistent.Persistent) *RuleMatcher {
 	return &RuleMatcher{
 		route: route,
 		rule:  rule,
 		req:   req,
+		db:    db,
 	}
 }
 
@@ -20,6 +22,7 @@ type RuleMatcher struct {
 	route *cfg.Route
 	rule  *cfg.Rule
 	req   Context
+	db    persistent.Persistent
 }
 
 func (r *RuleMatcher) Match() (bool, error) {
@@ -46,7 +49,7 @@ func (r *RuleMatcher) Match() (bool, error) {
 
 func (r *RuleMatcher) GetTargetValue() (string, error) {
 	if targetFn, ok := targets[r.rule.Target]; ok {
-		return targetFn(r.route, r.rule.Modifier, r.req)
+		return targetFn(r.route, r.rule.Modifier, r.req, r.db)
 	}
 
 	return "", nil

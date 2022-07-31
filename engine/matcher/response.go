@@ -4,17 +4,20 @@ import (
 	"github.com/pkg/errors"
 
 	cfg "github.com/tuongaz/smocky-engine/engine/mock"
+	"github.com/tuongaz/smocky-engine/engine/persistent"
 )
 
 func NewResponseMatcher(
 	route *cfg.Route,
 	response *cfg.Response,
 	req Context,
+	db persistent.Persistent,
 ) *ResponseMatcher {
 	return &ResponseMatcher{
 		route:    route,
 		response: response,
 		req:      req,
+		db:       db,
 	}
 }
 
@@ -22,6 +25,7 @@ type ResponseMatcher struct {
 	route    *cfg.Route
 	response *cfg.Response
 	req      Context
+	db       persistent.Persistent
 }
 
 func (r *ResponseMatcher) Match() (bool, error) {
@@ -35,7 +39,7 @@ func (r *ResponseMatcher) Match() (bool, error) {
 	}
 
 	for _, rule := range r.response.Rules {
-		matched, err := NewRuleMatcher(r.route, &rule, r.req).Match() // matcher. rule.Match(route, request)
+		matched, err := NewRuleMatcher(r.route, &rule, r.req, r.db).Match() // matcher. rule.Match(route, request)
 		if err != nil {
 			return false, errors.Wrap(err, "matching rule")
 		}

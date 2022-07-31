@@ -6,19 +6,6 @@ import (
 	"github.com/tuongaz/smocky-engine/engine/mock"
 )
 
-var _default Persistent
-
-func New(p Persistent) {
-	_default = p
-}
-
-func GetDefault() Persistent {
-	if _default == nil {
-		panic("default persistent needs to be initialised")
-	}
-	return _default
-}
-
 type Persistent interface {
 	SetMock(ctx context.Context, cfg *mock.Mock) error
 	GetMock(ctx context.Context, id string) (*mock.Mock, error)

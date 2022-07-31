@@ -14,11 +14,13 @@ import (
 type Engine struct {
 	mockID   string
 	isPaused bool
+	db       persistent.Persistent
 }
 
-func New(mockID string) *Engine {
+func New(mockID string, db persistent.Persistent) *Engine {
 	return &Engine{
 		mockID: mockID,
+		db:     db,
 	}
 }
 
@@ -32,14 +34,13 @@ func (eng *Engine) Pause() {
 
 func (eng *Engine) Match(req *http.Request) *mock.Response {
 	ctx := req.Context()
-	db := persistent.GetDefault()
-	mok, err := db.GetMock(ctx, eng.mockID)
+	mok, err := eng.db.GetMock(ctx, eng.mockID)
 	if err != nil {
 		log.WithError(err).Error("loading mock")
 		return nil
 	}
 
-	sessionID, err := db.GetActiveSession(ctx, eng.mockID)
+	sessionID, err := eng.db.GetActiveSession(ctx, eng.mockID)
 	if err != nil {
 		log.WithError(err).WithField("config_id", eng.mockID).Error("get active session")
 	}
@@ -49,7 +50,7 @@ func (eng *Engine) Match(req *http.Request) *mock.Response {
 		response, err := matcher.NewRouteMatcher(route, matcher.Context{
 			HTTPRequest: req,
 			SessionID:   sessionID,
-		}).Match()
+		}, eng.db).Match()
 		if err != nil {
 			log.WithError(err).Error("error while matching route")
 			continue
