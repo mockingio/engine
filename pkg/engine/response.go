@@ -1,4 +1,4 @@
-package smocky
+package engine
 
 import (
 	"net/http/httptest"

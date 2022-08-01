@@ -1,4 +1,4 @@
-package smocky_test
+package engine_test
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/mockingio/engine/pkg/smocky"
+	. "github.com/mockingio/engine/pkg/engine"
 )
 
 func TestBuilder_MatchedRoute(t *testing.T) {
