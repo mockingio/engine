@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/tuongaz/smocky-engine/pkg/smocky"
+	. "github.com/mockingio/engine/pkg/smocky"
 )
 
 func TestBuilder_MatchedRoute(t *testing.T) {

@@ -1,12 +1,10 @@
-package mock_test
+package mock
 
 import (
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	. "github.com/tuongaz/smocky-engine/engine/mock"
 )
 
 func TestResponse_Validate(t *testing.T) {

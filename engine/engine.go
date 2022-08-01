@@ -6,9 +6,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/tuongaz/smocky-engine/engine/matcher"
-	"github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
+	"github.com/mockingio/engine/engine/matcher"
+	"github.com/mockingio/engine/engine/mock"
+	"github.com/mockingio/engine/engine/persistent"
 )
 
 type Engine struct {

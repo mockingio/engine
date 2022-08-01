@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tuongaz/smocky-engine/engine/mock"
+	"github.com/mockingio/engine/engine/mock"
 )
 
 type When struct {

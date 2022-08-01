@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tuongaz/smocky-engine/engine/matcher"
-	cfg "github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent/memory"
+	"github.com/mockingio/engine/engine/matcher"
+	cfg "github.com/mockingio/engine/engine/mock"
+	"github.com/mockingio/engine/engine/persistent/memory"
 )
 
 func TestResponseMatcher_Match(t *testing.T) {

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mockingio/engine/engine/mock"
+	"github.com/mockingio/engine/engine/persistent"
 	"github.com/samber/lo"
-	"github.com/tuongaz/smocky-engine/engine/mock"
-	"github.com/tuongaz/smocky-engine/engine/persistent"
 )
 
 var _ persistent.Persistent = &Memory{}

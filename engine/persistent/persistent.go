@@ -3,7 +3,7 @@ package persistent
 import (
 	"context"
 
-	"github.com/tuongaz/smocky-engine/engine/mock"
+	"github.com/mockingio/engine/engine/mock"
 )
 
 type Persistent interface {

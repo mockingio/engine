@@ -1,4 +1,4 @@
-module github.com/tuongaz/smocky-engine
+module github.com/mockingio/engine
 
 go 1.18
 

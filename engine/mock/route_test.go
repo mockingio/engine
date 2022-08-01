@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/tuongaz/smocky-engine/engine/mock"
+	. "github.com/mockingio/engine/engine/mock"
 )
 
 func TestRoute_Validate(t *testing.T) {
