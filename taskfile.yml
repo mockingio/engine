@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+  tidy:
+    cmds:
+      - go mod tidy && go mod vendor && go mod download
+  lint:
+    cmds:
+      - dagger do lint --log-format=plain
+  test:
+    cmds:
+      - dagger do test --log-format=plain
+
