@@ -3,10 +3,6 @@ package main
 import (
     "dagger.io/dagger"
 
-		"universe.dagger.io/bash"
-		"universe.dagger.io/alpine"
-    "universe.dagger.io/go"
-
 		"github.com/mockingio/dagger/ci/golangci"
 )
 
