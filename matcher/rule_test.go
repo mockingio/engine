@@ -120,35 +120,36 @@ func TestRuleMatcher_GetTargetValue(t *testing.T) {
 	_ = mem.Set(context.Background(), req.CountID(), 2)
 
 	var route = &cfg.Route{
-		Method: "GET",
-		Path:   "/api/:object/:action",
+		Path: "/api/:object/:action",
 	}
 
 	tests := []struct {
+		route         *cfg.Route
 		request       *http.Request
 		rule          *cfg.Rule
 		expectedValue string
 	}{
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Header, Modifier: "Authorization"}, "Bearer 123"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Header, Modifier: "Random"}, ""},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Cookie, Modifier: "Token"}, "Token 123"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Cookie, Modifier: "Random"}, ""},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.QueryString, Modifier: "name"}, "joe"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.QueryString, Modifier: "Random"}, ""},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".name"}, "joe"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ""}, `{"name": "joe","address": { "street": "123 Road", "postcode": "2234" }}`},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".address.postcode"}, "2234"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".address.random"}, ""},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "object"}, "person"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "action"}, "detail"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "random"}, ""},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.RequestNumber}, "2"},
-		{newHTTPRequest(), &cfg.Rule{Target: cfg.Target("random target")}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Header, Modifier: "Authorization"}, "Bearer 123"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Header, Modifier: "Random"}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Cookie, Modifier: "Token"}, "Token 123"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Cookie, Modifier: "Random"}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.QueryString, Modifier: "name"}, "joe"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.QueryString, Modifier: "Random"}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".name"}, "joe"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ""}, `{"name": "joe","address": { "street": "123 Road", "postcode": "2234" }}`},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".address.postcode"}, "2234"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Body, Modifier: ".address.random"}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "object"}, "person"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "action"}, "detail"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "random"}, ""},
+		{&cfg.Route{Path: "/api/:object/:action/:something"}, newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "random"}, ""},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.RequestNumber}, "2"},
+		{route, newHTTPRequest(), &cfg.Rule{Target: cfg.Target("random target")}, ""},
 	}
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("Target: %v, Modifier: %v", tt.rule.Target, tt.rule.Modifier), func(t *testing.T) {
-			actual, err := matcher.NewRuleMatcher(route, tt.rule, matcher.Context{
+			actual, err := matcher.NewRuleMatcher(tt.route, tt.rule, matcher.Context{
 				HTTPRequest: tt.request,
 				SessionID:   sessionID,
 			}, mem).GetTargetValue()
