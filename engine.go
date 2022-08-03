@@ -88,10 +88,6 @@ func (eng *Engine) Handler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(k, v)
 	}
 
-	if response.Status == 0 {
-		response.Status = 200
-	}
-
 	w.WriteHeader(response.Status)
 	_, _ = w.Write([]byte(response.Body))
 }
