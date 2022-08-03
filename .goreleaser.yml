@@ -1,4 +1,4 @@
-project_name: engine
+project_name: go
 
 before:
   hooks:
@@ -7,11 +7,8 @@ before:
 builds:
   - skip: true
 
-release:
-  draft: false
-  github:
-    owner: mockingio
-    name: mockingio
+checksum:
+  name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"
 
 changelog:
   use: github
