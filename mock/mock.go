@@ -12,33 +12,45 @@ import (
 )
 
 type Mock struct {
-	ID     string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Name   string   `yaml:"name,omitempty" json:"name,omitempty"`
-	Port   string   `yaml:"port,omitempty" json:"port,omitempty"`
-	Routes []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
+	ID      string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
+	Port    string   `yaml:"port,omitempty" json:"port,omitempty"`
+	Routes  []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
+	options mockOptions
 }
 
-func New() *Mock {
-	return &Mock{}
+func New(opts ...Option) *Mock {
+	m := &Mock{
+		options: mockOptions{},
+	}
+
+	for _, opt := range opts {
+		opt(&m.options)
+	}
+
+	return m
 }
 
-func FromFile(file string) (*Mock, error) {
-	// TODO: check the file extension, support loading mock from JSON
+func FromFile(file string, opts ...Option) (*Mock, error) {
+	// TODO: Detects file type, support JSON
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, errors.Wrap(err, "read mock file")
 	}
 
-	return FromYaml(string(data))
+	return FromYaml(string(data), opts...)
 }
 
-func FromYaml(text string) (*Mock, error) {
+func FromYaml(text string, opts ...Option) (*Mock, error) {
 	decoder := yaml.NewDecoder(strings.NewReader(text))
-	m := &Mock{}
+	m := New(opts...)
 	if err := decoder.Decode(m); err != nil {
 		return nil, errors.Wrap(err, "decode yaml to mock")
 	}
 	defaultValues(m)
+	if m.options.idGeneration {
+		addIDs(m)
+	}
 
 	return m, nil
 }
@@ -58,7 +70,7 @@ func defaultValues(m *Mock) {
 }
 
 // AddIDs Add ids for mock and routes, responses and rules
-func AddIDs(m *Mock) {
+func addIDs(m *Mock) {
 	if m.ID == "" {
 		m.ID = newID()
 	}

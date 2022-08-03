@@ -1,5 +1,4 @@
 name: Hello World
-id: 123
 routes:
   - method: GET
     path: /hello/world

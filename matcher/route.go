@@ -33,14 +33,8 @@ func (r *RouteMatcher) Match() (*cfg.Response, error) {
 		return nil, nil
 	}
 
-	parts := strings.Split(r.route.Path, "/")
-	for i, part := range parts {
-		if part != "" && string(part[0]) == ":" {
-			parts[i] = "*"
-		}
-	}
-
-	if !wildcard.Match(strings.Join(parts, "/"), httpRequest.URL.Path) {
+	wildcardPath := toWildcardPath(r.route.Path)
+	if !wildcard.Match(wildcardPath, httpRequest.URL.Path) {
 		return nil, nil
 	}
 
@@ -116,4 +110,15 @@ func (r *RouteMatcher) findMatches() ([]*cfg.Response, error) {
 	}
 
 	return responses, nil
+}
+
+func toWildcardPath(path string) string {
+	parts := strings.Split(path, "/")
+	for i, part := range parts {
+		if part != "" && string(part[0]) == ":" {
+			parts[i] = "*"
+		}
+	}
+
+	return strings.Join(parts, "/")
 }

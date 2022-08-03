@@ -2,7 +2,6 @@ package mock_test
 
 import (
 	_ "embed"
-	"encoding/json"
 	"gopkg.in/yaml.v2"
 	"path/filepath"
 	"testing"
@@ -14,7 +13,7 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	t.Run("Load config from YAML file", func(t *testing.T) {
+	t.Run("Load mock from YAML file", func(t *testing.T) {
 		cfg, err := FromFile("fixtures/mock.yml")
 
 		assert.True(t, cfg.Validate() == nil)
@@ -28,20 +27,22 @@ func TestConfig(t *testing.T) {
 		assert.Equal(t, test.ReadGoldenFile(t, goldenFile), string(text))
 	})
 
-	t.Run("Load config from JSON file", func(t *testing.T) {
-		cfg, err := FromFile("fixtures/mock.json")
+	t.Run("Load mock from YAML file, with ID generation option", func(t *testing.T) {
+		mock, err := FromFile("fixtures/mock.yml", WithIDGeneration())
 		require.NoError(t, err)
 
-		require.NoError(t, cfg.Validate())
+		assert.True(t, mock.ID != "")
+		assert.True(t, mock.Routes[0].ID != "")
+		assert.True(t, mock.Routes[0].Responses[0].ID != "")
+		assert.True(t, mock.Routes[0].Responses[0].Rules[0].ID != "")
+	})
 
-		var goldenFile = filepath.Join("fixtures", "mock.golden.json")
+	t.Run("When method, status is not presented, use default GET/200 as response", func(t *testing.T) {
+		mock, err := FromFile("fixtures/mock_no_method_status.yml")
 		require.NoError(t, err)
 
-		text, _ := json.MarshalIndent(cfg, "", "  ")
-
-		test.UpdateGoldenFile(t, goldenFile, text)
-
-		assert.Equal(t, test.ReadGoldenFile(t, goldenFile), string(text))
+		assert.Equal(t, "GET", mock.Routes[0].Method)
+		assert.Equal(t, 200, mock.Routes[0].Responses[0].Status)
 	})
 
 	t.Run("error loading config from YAML file", func(t *testing.T) {
