@@ -8,8 +8,6 @@
 ### Go package usage
 
 ```go
-package example_test
-
 import (
 	"net/http"
 	"testing"
