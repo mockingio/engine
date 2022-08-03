@@ -9,6 +9,15 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "major|minor|patch"
+        default: "patch"
+        required: true
+      release_version:
+        description: "Optional release version, e.g. 0.0.1"
+        required: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
