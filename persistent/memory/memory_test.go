@@ -106,8 +106,18 @@ func TestMemory_PatchRoute(t *testing.T) {
 		assert.Equal(t, "POST", mok.Routes[0].Method)
 	})
 
+	t.Run("mock not found", func(t *testing.T) {
+		err := m.PatchRoute(context.Background(), "random", "", `{}`)
+		require.Error(t, err)
+	})
+
 	t.Run("route not found", func(t *testing.T) {
 		err := m.PatchRoute(context.Background(), "mockid", "random", `{}`)
+		require.Error(t, err)
+	})
+
+	t.Run("invalid json", func(t *testing.T) {
+		err := m.PatchRoute(context.Background(), "mockid", "routeid", `{"method": "}`)
 		require.Error(t, err)
 	})
 }
@@ -139,27 +149,30 @@ func TestMemory_PatchResponse(t *testing.T) {
 	}
 	_ = m.SetMock(context.Background(), mok)
 
+	t.Run("success", func(t *testing.T) {
+		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{"status": 201}`)
+		require.NoError(t, err)
+		assert.Equal(t, 201, mok.Routes[1].Responses[1].Status)
+	})
+
 	t.Run("mock not found", func(t *testing.T) {
 		err := m.PatchResponse(context.Background(), "random", "", "", `{}`)
 		assert.Error(t, err)
 	})
 
 	t.Run("route not found", func(t *testing.T) {
-		m := New()
 		err := m.PatchResponse(context.Background(), "mockid", "random", "responseid2", `{}`)
 		assert.Error(t, err)
 	})
 
 	t.Run("response not found", func(t *testing.T) {
-		m := New()
 		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "random", `{`)
 		assert.Error(t, err)
 	})
 
-	t.Run("success", func(t *testing.T) {
-		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{"status": 201}`)
-		require.NoError(t, err)
-		assert.Equal(t, 201, mok.Routes[1].Responses[1].Status)
+	t.Run("invalid json", func(t *testing.T) {
+		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{": 201}`)
+		assert.Error(t, err)
 	})
 }
 
