@@ -8,6 +8,7 @@ builds:
   - skip: true
 
 release:
+  draft: false
   github:
     owner: mockingio
     name: mockingio
