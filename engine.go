@@ -52,7 +52,7 @@ func (eng *Engine) Match(req *http.Request) *mock.Response {
 			SessionID:   sessionID,
 		}, eng.db).Match()
 		if err != nil {
-			log.WithError(err).Error("error while matching route")
+			log.WithError(err).Error("matching route")
 			continue
 		}
 

@@ -79,6 +79,14 @@ func TestRuleMatcher_Match(t *testing.T) {
 			true,
 			false,
 		},
+		{
+			"non exist operator, no match",
+			&cfg.Route{},
+			newHTTPRequest(),
+			&cfg.Rule{Target: cfg.RequestNumber, Value: "2", Operator: cfg.Operator("random")},
+			false,
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -135,6 +143,7 @@ func TestRuleMatcher_GetTargetValue(t *testing.T) {
 		{newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "action"}, "detail"},
 		{newHTTPRequest(), &cfg.Rule{Target: cfg.RouteParam, Modifier: "random"}, ""},
 		{newHTTPRequest(), &cfg.Rule{Target: cfg.RequestNumber}, "2"},
+		{newHTTPRequest(), &cfg.Rule{Target: cfg.Target("random target")}, ""},
 	}
 
 	for _, tt := range tests {

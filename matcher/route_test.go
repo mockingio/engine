@@ -110,6 +110,13 @@ func TestRouteMatcher_Match(t *testing.T) {
 			false,
 		},
 		{
+			"variable matched, response returned",
+			httpPostReqWithHeaderBody,
+			&cfg.Route{Method: "POST", Path: "/how/are/:someVariable", Responses: []cfg.Response{singleRuleResponse}},
+			&singleRuleResponse,
+			false,
+		},
+		{
 			"multiple rule matched, response returned",
 			httpPostReqWithHeaderBody,
 			&cfg.Route{Method: "POST", Path: "/how/are/you", Responses: []cfg.Response{multiANDRulesResponse}},
@@ -183,6 +190,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 	request.Header.Add("Authorization", "Bearer")
 
 	response1 := cfg.Response{
+		ID:              "1",
 		Status:          http.StatusOK,
 		RuleAggregation: cfg.And,
 		Rules: []cfg.Rule{{
@@ -194,6 +202,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 	}
 
 	response2 := cfg.Response{
+		ID:              "2",
 		Status:          http.StatusNotFound,
 		RuleAggregation: cfg.And,
 		Rules: []cfg.Rule{{
@@ -205,6 +214,7 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 	}
 
 	response3 := cfg.Response{
+		ID:              "3",
 		Status:          http.StatusInternalServerError,
 		RuleAggregation: cfg.And,
 		Rules: []cfg.Rule{{
@@ -304,5 +314,33 @@ func TestRouteMatcher_ResponseStrategy(t *testing.T) {
 		}, db).Match()
 		require.NoError(t, err)
 		assert.Equal(t, &response3, result3)
+	})
+
+	t.Run("random strategy setup", func(t *testing.T) {
+		route := &cfg.Route{
+			Method:       "GET",
+			Path:         "/how/are/you",
+			ResponseMode: cfg.ResponseRandomly,
+			Responses:    []cfg.Response{response1, response2, response3},
+		}
+
+		db := memory.New()
+
+		passed := false
+		result, _ := matcher.NewRouteMatcher(route, matcher.Context{
+			HTTPRequest: request,
+		}, db).Match()
+
+		for i := 0; i < 100; i++ {
+			check, _ := matcher.NewRouteMatcher(route, matcher.Context{
+				HTTPRequest: request,
+			}, db).Match()
+			if check.ID != result.ID {
+				passed = true
+				break
+			}
+		}
+
+		assert.True(t, passed)
 	})
 }
