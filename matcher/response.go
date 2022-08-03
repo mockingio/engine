@@ -3,8 +3,8 @@ package matcher
 import (
 	"github.com/pkg/errors"
 
-	cfg "github.com/mockingio/engine/engine/mock"
-	"github.com/mockingio/engine/engine/persistent"
+	cfg "github.com/mockingio/engine/mock"
+	"github.com/mockingio/engine/persistent"
 )
 
 func NewResponseMatcher(

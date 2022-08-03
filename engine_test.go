@@ -2,7 +2,7 @@ package engine_test
 
 import (
 	"context"
-	"github.com/mockingio/engine/engine/persistent"
+	"github.com/mockingio/engine/persistent"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/mockingio/engine/engine"
-	"github.com/mockingio/engine/engine/mock"
-	"github.com/mockingio/engine/engine/persistent/memory"
+	"github.com/mockingio/engine"
+	"github.com/mockingio/engine/mock"
+	"github.com/mockingio/engine/persistent/memory"
 )
 
 func TestEngine_Pause(t *testing.T) {

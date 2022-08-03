@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/mockingio/engine/engine/mock"
-	"github.com/mockingio/engine/engine/persistent"
+	"github.com/mockingio/engine/mock"
+	"github.com/mockingio/engine/persistent"
 	"github.com/samber/lo"
 )
 

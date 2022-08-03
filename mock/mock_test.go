@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	. "github.com/mockingio/engine/engine/mock"
-	"github.com/mockingio/engine/engine/test"
+	. "github.com/mockingio/engine/mock"
+	"github.com/mockingio/engine/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
