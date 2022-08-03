@@ -23,9 +23,12 @@ func TestMemory_GetSetConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	value, err := m.GetMock(context.Background(), "*id*")
-
 	require.NoError(t, err)
 	assert.Equal(t, value, cfg)
+
+	value, err = m.GetMock(context.Background(), "*random*")
+	require.NoError(t, err)
+	assert.Nil(t, value)
 }
 
 func TestMemory_GetInt(t *testing.T) {
@@ -35,9 +38,12 @@ func TestMemory_GetInt(t *testing.T) {
 	require.NoError(t, err)
 
 	value, err := m.GetInt(context.Background(), "*id*")
-
 	require.NoError(t, err)
 	assert.Equal(t, value, 200)
+
+	value, err = m.GetInt(context.Background(), "*random*")
+	require.NoError(t, err)
+	assert.Equal(t, value, 0)
 }
 
 func TestMemory_Increase(t *testing.T) {
@@ -53,6 +59,17 @@ func TestMemory_Increase(t *testing.T) {
 	i, err := m.GetInt(context.Background(), "*id*")
 	require.NoError(t, err)
 	assert.Equal(t, 201, i)
+
+	// when key does not exist
+	val, err = m.Increment(context.Background(), "*random*")
+	require.NoError(t, err)
+	assert.Equal(t, 1, val)
+
+	// when value is not int
+	err = m.Set(context.Background(), "*non-int*", "200")
+	require.NoError(t, err)
+	_, err = m.Increment(context.Background(), "*non-int*")
+	assert.Error(t, err)
 }
 
 func TestMemory_SetGetActiveSession(t *testing.T) {
@@ -83,9 +100,16 @@ func TestMemory_PatchRoute(t *testing.T) {
 	}
 	_ = m.SetMock(context.Background(), mok)
 
-	err := m.PatchRoute(context.Background(), "mockid", "routeid", `{"method": "POST"}`)
-	require.NoError(t, err)
-	assert.Equal(t, "POST", mok.Routes[0].Method)
+	t.Run("success", func(t *testing.T) {
+		err := m.PatchRoute(context.Background(), "mockid", "routeid", `{"method": "POST"}`)
+		require.NoError(t, err)
+		assert.Equal(t, "POST", mok.Routes[0].Method)
+	})
+
+	t.Run("route not found", func(t *testing.T) {
+		err := m.PatchRoute(context.Background(), "mockid", "random", `{}`)
+		require.Error(t, err)
+	})
 }
 
 func TestMemory_PatchResponse(t *testing.T) {
@@ -115,9 +139,28 @@ func TestMemory_PatchResponse(t *testing.T) {
 	}
 	_ = m.SetMock(context.Background(), mok)
 
-	err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{"status": 201}`)
-	require.NoError(t, err)
-	assert.Equal(t, 201, mok.Routes[1].Responses[1].Status)
+	t.Run("mock not found", func(t *testing.T) {
+		err := m.PatchResponse(context.Background(), "random", "", "", `{}`)
+		assert.Error(t, err)
+	})
+
+	t.Run("route not found", func(t *testing.T) {
+		m := New()
+		err := m.PatchResponse(context.Background(), "mockid", "random", "responseid2", `{}`)
+		assert.Error(t, err)
+	})
+
+	t.Run("response not found", func(t *testing.T) {
+		m := New()
+		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "random", `{`)
+		assert.Error(t, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		err := m.PatchResponse(context.Background(), "mockid", "routeid2", "responseid2", `{"status": 201}`)
+		require.NoError(t, err)
+		assert.Equal(t, 201, mok.Routes[1].Responses[1].Status)
+	})
 }
 
 func TestMemory_GetConfigs(t *testing.T) {
