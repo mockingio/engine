@@ -15,7 +15,7 @@ type Persistent interface {
 	Get(ctx context.Context, key string) (any, error)
 
 	GetInt(ctx context.Context, key string) (int, error)
-	Increment(_ context.Context, key string) (int, error)
+	Increment(ctx context.Context, key string) (int, error)
 
 	SetActiveSession(ctx context.Context, mockID string, sessionID string) error
 	GetActiveSession(ctx context.Context, mockID string) (string, error)
