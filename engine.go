@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"context"
+	"github.com/pkg/errors"
 	"net/http"
 	"time"
 
@@ -15,6 +17,7 @@ type Engine struct {
 	mockID   string
 	isPaused bool
 	db       persistent.Persistent
+	mock     *mock.Mock
 }
 
 func New(mockID string, db persistent.Persistent) *Engine {
@@ -34,11 +37,12 @@ func (eng *Engine) Pause() {
 
 func (eng *Engine) Match(req *http.Request) *mock.Response {
 	ctx := req.Context()
-	mok, err := eng.db.GetMock(ctx, eng.mockID)
-	if err != nil {
-		log.WithError(err).Error("loading mock")
+	if err := eng.reloadMock(ctx); err != nil {
+		log.WithError(err).Error("reload mock")
 		return nil
 	}
+
+	mok := eng.getMock()
 
 	sessionID, err := eng.db.GetActiveSession(ctx, eng.mockID)
 	if err != nil {
@@ -67,6 +71,25 @@ func (eng *Engine) Match(req *http.Request) *mock.Response {
 
 		return response
 	}
+
+	return nil
+}
+
+func (eng *Engine) getMock() *mock.Mock {
+	return eng.mock
+}
+
+func (eng *Engine) reloadMock(ctx context.Context) error {
+	mok, err := eng.db.GetMock(ctx, eng.mockID)
+	if err != nil {
+		return errors.Wrap(err, "get mock from DB")
+	}
+
+	if mok == nil {
+		return errors.New("mock not found")
+	}
+
+	eng.mock = mok
 
 	return nil
 }
