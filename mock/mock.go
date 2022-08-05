@@ -16,6 +16,7 @@ type Mock struct {
 	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
 	Port    string   `yaml:"port,omitempty" json:"port,omitempty"`
 	Routes  []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
+	Proxy   *Proxy   `yaml:"proxy,omitempty" json:"proxy,omitempty"`
 	options mockOptions
 }
 
@@ -53,6 +54,17 @@ func FromYaml(text string, opts ...Option) (*Mock, error) {
 	}
 
 	return m, nil
+}
+
+func (c Mock) Validate() error {
+	return validation.ValidateStruct(
+		&c,
+		validation.Field(&c.Routes, validation.Required),
+	)
+}
+
+func (c Mock) ProxyEnabled() bool {
+	return c.Proxy != nil && c.Proxy.Enabled
 }
 
 func defaultValues(m *Mock) {
@@ -93,13 +105,6 @@ func addIDs(m *Mock) {
 			}
 		}
 	}
-}
-
-func (c Mock) Validate() error {
-	return validation.ValidateStruct(
-		&c,
-		validation.Field(&c.Routes, validation.Required),
-	)
 }
 
 func newID() string {
