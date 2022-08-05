@@ -16,6 +16,7 @@ type Mock struct {
 	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
 	Port    string   `yaml:"port,omitempty" json:"port,omitempty"`
 	Routes  []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
+	Proxy   *Proxy   `yaml:"proxy,omitempty" json:"proxy,omitempty"`
 	options mockOptions
 }
 
