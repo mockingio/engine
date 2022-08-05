@@ -2,9 +2,10 @@ package mock_test
 
 import (
 	_ "embed"
-	"gopkg.in/yaml.v2"
 	"path/filepath"
 	"testing"
+
+	"gopkg.in/yaml.v2"
 
 	. "github.com/mockingio/engine/mock"
 	"github.com/mockingio/engine/test"
@@ -46,14 +47,24 @@ func TestConfig(t *testing.T) {
 	})
 
 	t.Run("error loading config from YAML file", func(t *testing.T) {
-		cfg, err := FromFile("")
+		mock, err := FromFile("")
 		assert.Error(t, err)
-		assert.Nil(t, cfg)
+		assert.Nil(t, mock)
 	})
 
 	t.Run("error loading mock from empty yaml", func(t *testing.T) {
-		cfg, err := FromYaml("")
+		mock, err := FromYaml("")
 		assert.Error(t, err)
-		assert.Nil(t, cfg)
+		assert.Nil(t, mock)
+	})
+
+	t.Run("proxy is enabled", func(t *testing.T) {
+		mock := &Mock{
+			Proxy: &Proxy{
+				Enabled: true,
+			},
+		}
+		assert.False(t, New().ProxyEnabled())
+		assert.True(t, mock.ProxyEnabled())
 	})
 }

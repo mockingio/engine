@@ -2,10 +2,11 @@ package engine
 
 import (
 	"context"
-	"github.com/pkg/errors"
+	"io"
 	"net/http"
 	"time"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mockingio/engine/matcher"
@@ -75,6 +76,57 @@ func (eng *Engine) Match(req *http.Request) *mock.Response {
 	return nil
 }
 
+func (eng *Engine) Handler(w http.ResponseWriter, r *http.Request) {
+	if eng.isPaused {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	response := eng.Match(r)
+	if response == nil {
+		mok := eng.getMock()
+		if mok.ProxyEnabled() {
+			eng.handleProxy(w, r)
+			return
+		}
+
+		eng.noMatchHandler(w)
+		return
+	}
+
+	for k, v := range response.Headers {
+		w.Header().Add(k, v)
+	}
+
+	w.WriteHeader(response.Status)
+	_, _ = w.Write([]byte(response.Body))
+}
+
+func (eng *Engine) noMatchHandler(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNotFound)
+}
+
+func (eng *Engine) handleProxy(w http.ResponseWriter, r *http.Request) {
+	proxy := eng.getMock().Proxy
+
+	req, err := copyProxyRequest(r, proxy)
+	if err != nil {
+		log.WithError(err).Error("copy request")
+		eng.noMatchHandler(w)
+		return
+	}
+
+	res, err := (&http.Client{}).Do(req)
+	if err != nil {
+		log.WithError(err).Error("make proxy request")
+		eng.noMatchHandler(w)
+		return
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	writeProxyResponse(res, w, proxy)
+}
+
 func (eng *Engine) getMock() *mock.Mock {
 	return eng.mock
 }
@@ -94,23 +146,28 @@ func (eng *Engine) reloadMock(ctx context.Context) error {
 	return nil
 }
 
-func (eng *Engine) Handler(w http.ResponseWriter, r *http.Request) {
-	if eng.isPaused {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
+func copyProxyRequest(r *http.Request, proxy *mock.Proxy) (*http.Request, error) {
+	req, err := http.NewRequest(r.Method, proxy.Host+r.URL.Path, r.Body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = r.Header
+
+	for k, v := range proxy.RequestHeaders {
+		req.Header.Add(k, v)
 	}
 
-	response := eng.Match(r)
-	if response == nil {
-		// TODO: no matched? What will be the response?
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+	return req, nil
+}
 
-	for k, v := range response.Headers {
+func writeProxyResponse(res *http.Response, w http.ResponseWriter, proxy *mock.Proxy) {
+	for k, v := range res.Header {
+		w.Header().Add(k, v[0])
+	}
+	for k, v := range proxy.ResponseHeaders {
 		w.Header().Add(k, v)
 	}
 
-	w.WriteHeader(response.Status)
-	_, _ = w.Write([]byte(response.Body))
+	w.WriteHeader(res.StatusCode)
+	_, _ = io.Copy(w, res.Body)
 }

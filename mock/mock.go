@@ -56,6 +56,17 @@ func FromYaml(text string, opts ...Option) (*Mock, error) {
 	return m, nil
 }
 
+func (c Mock) Validate() error {
+	return validation.ValidateStruct(
+		&c,
+		validation.Field(&c.Routes, validation.Required),
+	)
+}
+
+func (c Mock) ProxyEnabled() bool {
+	return c.Proxy != nil && c.Proxy.Enabled
+}
+
 func defaultValues(m *Mock) {
 	for _, r := range m.Routes {
 		if r.Method == "" {
@@ -94,13 +105,6 @@ func addIDs(m *Mock) {
 			}
 		}
 	}
-}
-
-func (c Mock) Validate() error {
-	return validation.ValidateStruct(
-		&c,
-		validation.Field(&c.Routes, validation.Required),
-	)
 }
 
 func newID() string {
