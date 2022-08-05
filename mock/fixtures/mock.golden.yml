@@ -51,3 +51,10 @@ routes:
   description: ""
   responses:
   - status: 201
+proxy:
+  enabled: true
+  host: https://google.com
+  request_headers:
+    X-Forward: "123"
+  response_headers:
+    X-Response: "123"

@@ -2,6 +2,7 @@ package matcher
 
 import (
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
 
@@ -28,8 +29,12 @@ func NewRouteMatcher(route *cfg.Route, req Context, db persistent.Persistent) *R
 
 func (r *RouteMatcher) Match() (*cfg.Response, error) {
 	httpRequest := r.req.HTTPRequest
+	method := r.route.Method
+	if r.route.Method == "" {
+		method = http.MethodGet
+	}
 
-	if !strings.EqualFold(r.route.Method, httpRequest.Method) {
+	if !strings.EqualFold(method, httpRequest.Method) {
 		return nil, nil
 	}
 

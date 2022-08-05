@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"context"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -125,6 +126,52 @@ func TestEngine_NoResponses(t *testing.T) {
 	}()
 
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+}
+
+func TestEngine_ProxyHandler(t *testing.T) {
+	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/hello" {
+			t.Errorf("request path is %s, not /hello", r.URL.Path)
+		}
+
+		if r.Header.Get("X-Request") != "from request" {
+			t.Error("header is not append to the request")
+		}
+
+		w.Header().Set("Content-Type", "html/text")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("From Proxy"))
+	}))
+
+	mok := &mock.Mock{
+		ID: "mock-id",
+		Proxy: &mock.Proxy{
+			Enabled: true,
+			Host:    proxyServer.URL,
+			RequestHeaders: map[string]string{
+				"X-Request": "from request",
+			},
+			ResponseHeaders: map[string]string{
+				"X-Response": "from response",
+			},
+		},
+	}
+	mem := memory.New()
+	_ = mem.SetMock(context.Background(), mok)
+	eng := engine.New("mock-id", mem)
+
+	w := httptest.NewRecorder()
+	eng.Handler(w, httptest.NewRequest(http.MethodGet, "/hello", nil))
+	res := w.Result()
+	body, _ := io.ReadAll(res.Body)
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.Equal(t, "From Proxy", string(body))
+	assert.Equal(t, "html/text", res.Header.Get("Content-Type"))
+	assert.Equal(t, "from response", res.Header.Get("X-Response"))
 }
 
 func setupMock() persistent.Persistent {

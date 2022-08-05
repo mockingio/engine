@@ -1,4 +1,11 @@
 name: Hello World
+proxy:
+  enabled: true
+  host: https://google.com
+  request_headers:
+    X-Forward: 123
+  response_headers:
+    X-Response: 123
 routes:
   - method: GET
     path: /hello/world
