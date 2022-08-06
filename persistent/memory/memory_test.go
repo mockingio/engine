@@ -122,6 +122,81 @@ func TestMemory_PatchRoute(t *testing.T) {
 	})
 }
 
+func TestMemory_DeleteRoute(t *testing.T) {
+	m := New()
+	mok := &mock.Mock{
+		ID: "mockid",
+		Routes: []*mock.Route{
+			{
+				ID:     "routeid",
+				Method: "GET",
+			},
+			{
+				ID:     "routeid1",
+				Method: "PUT",
+			},
+		},
+	}
+	_ = m.SetMock(context.Background(), mok)
+
+	t.Run("success", func(t *testing.T) {
+		err := m.DeleteRoute(context.Background(), "mockid", "routeid")
+		require.NoError(t, err)
+
+		configs, err := m.GetMock(context.Background(), "mockid")
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(configs.Routes))
+	})
+
+	t.Run("mock not found", func(t *testing.T) {
+		err := m.DeleteRoute(context.Background(), "random", "")
+		assert.Error(t, err)
+	})
+
+	t.Run("route not found", func(t *testing.T) {
+		err := m.DeleteRoute(context.Background(), "mockid", "random")
+		assert.Error(t, err)
+	})
+}
+
+func TestMemory_CreateRoute(t *testing.T) {
+	m := New()
+	mok := &mock.Mock{
+		ID: "mockid",
+		Routes: []*mock.Route{
+			{
+				ID:     "routeid",
+				Method: "GET",
+			},
+		},
+	}
+	_ = m.SetMock(context.Background(), mok)
+
+	t.Run("success", func(t *testing.T) {
+		err := m.CreateRoute(context.Background(), "mockid", `{"id":"routeid1","method":"PUT"}`)
+		require.NoError(t, err)
+		configs, err := m.GetMock(context.Background(), "mockid")
+		require.NoError(t, err)
+		assert.Equal(t, 2, len(configs.Routes))
+	})
+
+	t.Run("mock not found", func(t *testing.T) {
+		err := m.CreateRoute(context.Background(), "random", `{}`)
+		assert.Error(t, err)
+	})
+
+	t.Run("route already created", func(t *testing.T) {
+		err := m.CreateRoute(context.Background(), "mockid", `{"id":"routeid1","method":"PUT"}`)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid json", func(t *testing.T) {
+		err := m.CreateRoute(context.Background(), "mockid", `{"method": "}`)
+		assert.Error(t, err)
+	})
+
+}
+
 func TestMemory_PatchResponse(t *testing.T) {
 	m := New()
 	mok := &mock.Mock{

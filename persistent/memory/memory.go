@@ -174,6 +174,70 @@ func (m *Memory) PatchRoute(ctx context.Context, mockID string, routeID string, 
 	return nil
 }
 
+func (m *Memory) DeleteRoute(ctx context.Context, mockID string, routeID string) error {
+	mok, err := m.GetMock(ctx, mockID)
+	if err != nil {
+		return err
+	}
+
+	if mok == nil {
+		return errors.New("mock not found")
+	}
+
+	_, idx, ok := lo.FindIndexOf[*mock.Route](mok.Routes, func(route *mock.Route) bool {
+		return route.ID == routeID
+	})
+
+	if !ok {
+		return errors.New("route not found")
+	}
+
+	mok.Routes = append(mok.Routes[:idx], mok.Routes[idx+1:]...)
+
+	if err := m.SetMock(ctx, mok); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Memory) CreateRoute(ctx context.Context, mockID string, data string) error {
+	mok, err := m.GetMock(ctx, mockID)
+	if err != nil {
+		return err
+	}
+
+	if mok == nil {
+		return errors.New("mock not found")
+	}
+
+	var values map[string]*json.RawMessage
+	if err := json.Unmarshal([]byte(data), &values); err != nil {
+		return err
+	}
+
+	var newRoute = &mock.Route{}
+	if err := patchStruct(newRoute, values); err != nil {
+		return err
+	}
+
+	_, _, ok := lo.FindIndexOf[*mock.Route](mok.Routes, func(route *mock.Route) bool {
+		return route.ID == newRoute.ID
+	})
+
+	if ok {
+		return errors.New("route already created")
+	}
+
+	mok.Routes = append(mok.Routes, newRoute)
+
+	if err := m.SetMock(ctx, mok); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Memory) PatchResponse(ctx context.Context, mockID, routeID, responseID, data string) error {
 	mok, err := m.GetMock(ctx, mockID)
 	if err != nil {
