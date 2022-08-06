@@ -12,12 +12,14 @@ import (
 )
 
 type Mock struct {
-	ID      string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Name    string   `yaml:"name,omitempty" json:"name,omitempty"`
-	Port    string   `yaml:"port,omitempty" json:"port,omitempty"`
-	Routes  []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
-	Proxy   *Proxy   `yaml:"proxy,omitempty" json:"proxy,omitempty"`
-	options mockOptions
+	ID     string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Name   string   `yaml:"name,omitempty" json:"name,omitempty"`
+	Port   string   `yaml:"port,omitempty" json:"port,omitempty"`
+	Routes []*Route `yaml:"routes,omitempty" json:"routes,omitempty"`
+	Proxy  *Proxy   `yaml:"proxy,omitempty" json:"proxy,omitempty"`
+	// all OPTIONS calls are responded with success if AutoCORS is true
+	AutoCORS bool `yaml:"auto_cors,omitempty" json:"auto_cors,omitempty"`
+	options  mockOptions
 }
 
 func New(opts ...Option) *Mock {
@@ -56,15 +58,15 @@ func FromYaml(text string, opts ...Option) (*Mock, error) {
 	return m, nil
 }
 
-func (c Mock) Validate() error {
+func (m Mock) Validate() error {
 	return validation.ValidateStruct(
-		&c,
-		validation.Field(&c.Routes, validation.Required),
+		&m,
+		validation.Field(&m.Routes, validation.Required),
 	)
 }
 
-func (c Mock) ProxyEnabled() bool {
-	return c.Proxy != nil && c.Proxy.Enabled
+func (m Mock) ProxyEnabled() bool {
+	return m.Proxy != nil && m.Proxy.Enabled
 }
 
 func defaultValues(m *Mock) {
