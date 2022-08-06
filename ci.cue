@@ -2,6 +2,7 @@ package main
 
 import (
     "dagger.io/dagger"
+    "universe.dagger.io/go"
 
 		"github.com/mockingio/dagger/ci/golangci"
 )
@@ -16,6 +17,14 @@ dagger.#Plan & {
 						go: golangci.#Lint & {
 						source:  _source
 						version: "1.45"
+					}
+				}
+
+				test: {
+					unit: go.#Test & {
+						source:  _source
+						package: "./..."
+						command: flags: "-race": true
 					}
 				}
     }
