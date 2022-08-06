@@ -1,0 +1,37 @@
+name: Lint
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*.*.*' # semver, will override latest
+      - '*-preview' # preview, won't override latest
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "major|minor|patch"
+        default: "patch"
+        required: true
+      release_version:
+        description: "Optional release version, e.g. 0.0.1"
+        required: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dagger
+        run: |
+          if ! command -v dagger &> /dev/null
+          then
+            cd /usr/local && curl -L https://dl.dagger.io/dagger/install.sh | sh
+          fi
+      - name: Dagger
+        uses: dagger/dagger-for-github@v3
+        with:
+          cmds: |
+            do lint
