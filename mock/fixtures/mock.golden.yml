@@ -58,3 +58,4 @@ proxy:
     X-Forward: "123"
   response_headers:
     X-Response: "123"
+auto_cors: true

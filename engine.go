@@ -85,8 +85,14 @@ func (eng *Engine) Handler(w http.ResponseWriter, r *http.Request) {
 	response := eng.Match(r)
 	if response == nil {
 		mok := eng.getMock()
+
+		if mok.AutoCORS && r.Method == http.MethodOptions {
+			eng.corsHandler(w, r)
+			return
+		}
+
 		if mok.ProxyEnabled() {
-			eng.handleProxy(w, r)
+			eng.proxyHandler(w, r)
 			return
 		}
 
@@ -106,7 +112,11 @@ func (eng *Engine) noMatchHandler(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func (eng *Engine) handleProxy(w http.ResponseWriter, r *http.Request) {
+func (eng *Engine) corsHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (eng *Engine) proxyHandler(w http.ResponseWriter, r *http.Request) {
 	proxy := eng.getMock().Proxy
 
 	req, err := copyProxyRequest(r, proxy)

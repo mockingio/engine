@@ -174,9 +174,80 @@ func TestEngine_ProxyHandler(t *testing.T) {
 	assert.Equal(t, "from response", res.Header.Get("X-Response"))
 }
 
+func TestEngine_CORS_Request(t *testing.T) {
+	tests := []struct {
+		name               string
+		mok                *mock.Mock
+		expectedStatusCode int
+	}{
+		{
+			"Auto CORS option is disabled, and no matching response, expect default 404",
+			&mock.Mock{
+				ID: "mock-id",
+			},
+			http.StatusNotFound,
+		}, {
+			"Auto CORS option is enabled, and no matching response, expect 200 OK",
+			&mock.Mock{
+				ID:       "mock-id",
+				AutoCORS: true,
+			},
+			http.StatusOK,
+		},
+		{
+			"Auto CORS option is enabled, and has matching response, use the matched response",
+			&mock.Mock{
+				ID:       "mock-id",
+				AutoCORS: true,
+				Routes: []*mock.Route{
+					{
+						Method: "OPTIONS",
+						Path:   "/hello",
+						Responses: []mock.Response{
+							{
+								Status: 201,
+							},
+						},
+					},
+				},
+			},
+			http.StatusCreated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mem := memory.New()
+			_ = mem.SetMock(context.Background(), tt.mok)
+			eng := engine.New("mock-id", mem)
+			req := httptest.NewRequest(http.MethodOptions, "/hello", nil)
+			w := httptest.NewRecorder()
+			eng.Handler(w, req)
+			res := w.Result()
+			defer func() {
+				_ = res.Body.Close()
+			}()
+
+			assert.Equal(t, tt.expectedStatusCode, res.StatusCode)
+		})
+	}
+}
+
+func TestEngine_MockNotFound(t *testing.T) {
+	mem := memory.New()
+	_ = mem.SetMock(context.Background(), &mock.Mock{
+		ID: "mock-2",
+	})
+	eng := engine.New("mock-1", mem)
+	req, _ := http.NewRequest(http.MethodGet, "/hello", nil)
+
+	assert.Nil(t, eng.Match(req))
+}
+
 func setupMock() persistent.Persistent {
 	mok := &mock.Mock{
-		ID: "mock-id",
+		ID:       "mock-id",
+		AutoCORS: true,
 		Routes: []*mock.Route{
 			{
 				Method: "GET",
