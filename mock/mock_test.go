@@ -67,4 +67,17 @@ func TestConfig(t *testing.T) {
 		assert.False(t, New().ProxyEnabled())
 		assert.True(t, mock.ProxyEnabled())
 	})
+
+	t.Run("Clone mock", func(t *testing.T) {
+		cfg, err := FromFile("fixtures/mock.yml")
+
+		assert.True(t, cfg.Validate() == nil)
+		require.NoError(t, err)
+
+		clone := cfg.Clone()
+		assert.True(t, clone.Validate() == nil)
+		assert.NotEqual(t, cfg.ID, clone.ID)
+
+	})
+
 }

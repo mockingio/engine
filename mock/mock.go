@@ -34,6 +34,20 @@ func New(opts ...Option) *Mock {
 	return m
 }
 
+func (r Mock) Clone() Mock {
+	result := r
+	result.ID = newID()
+	result.Routes = make([]*Route, len(r.Routes))
+	result.options = r.options
+	result.Proxy = r.Proxy.Clone()
+
+	for i, rule := range r.Routes {
+		result.Routes[i] = rule.Clone()
+	}
+
+	return result
+}
+
 func FromFile(file string, opts ...Option) (*Mock, error) {
 	// TODO: Detects file type, support JSON
 	data, err := ioutil.ReadFile(file)

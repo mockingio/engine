@@ -21,6 +21,18 @@ type Route struct {
 	Responses    []Response   `yaml:"responses" json:"responses"`
 }
 
+func (r Route) Clone() *Route {
+	result := r
+	result.ID = newID()
+	result.ResponseMode = r.ResponseMode
+	result.Responses = make([]Response, len(r.Responses))
+	for i, response := range r.Responses {
+		result.Responses[i] = response.Clone()
+	}
+
+	return &result
+}
+
 func (r Route) Validate() error {
 	return validation.ValidateStruct(
 		&r,
